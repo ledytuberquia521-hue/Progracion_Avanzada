@@ -202,7 +202,7 @@ calidad = st.sidebar.selectbox("Calidad", [1, 0], index=0, help="1 = solo datos 
 st.sidebar.markdown("---")
 st.sidebar.subheader("📷 Foto de referencia (opcional)")
 st.sidebar.caption("Si tienes una foto real de la estación 38, súbela aquí para tenerla como referencia visual.")
-st.image("sunrise.jpg", caption="Sunrise by the mountains")
+st.image("rio_nus.png", caption="Estacion")
 consultar = st.sidebar.button("🔍 Consultar", type="primary")
 
 st.title("🌊 Nivel de río/quebrada — Estación 38 (CORNARE)")
