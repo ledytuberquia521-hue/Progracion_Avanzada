@@ -231,7 +231,7 @@ else:
     )
 
 if foto_estacion is not None:
-    st.image(foto_estacion, caption="Foto de referencia — Estación 38", width=350)
+    st.image(rio_nus.png, caption="Foto de referencia — Estación 38", width=350)
 
 # ------------------------------------------------------------------
 # Consulta y procesamiento
