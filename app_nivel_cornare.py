@@ -25,7 +25,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # constante. Así nadie (ni yo por error) puede cambiarla desde la app.
 CODIGO_ESTACION = "38"
 
-# Coordenadas por defecto (Institución Universitaria Pascual Bravo)
+# Coordenadas Rio Nus
 # Se usan solo si la API no trae la latitud/longitud de la estación.
 LAT_DEFECTO = 6.4988
 LON_DEFECTO = -74.8315
