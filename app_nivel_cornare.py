@@ -230,7 +230,7 @@ else:
         "`CANDIDATOS_CORRIENTE` y `CANDIDATOS_MUNICIPIO` al inicio del archivo."
     )
 
-if  rio_nus.png is not None:
+
     st.image(rio_nus.png, caption="Foto de referencia — Estación 38", width=350)
 
 # ------------------------------------------------------------------
