@@ -26,8 +26,8 @@ CODIGO_ESTACION = "38"
 
 # Coordenadas por defecto (Institución Universitaria Pascual Bravo)
 # Se usan solo si la API no trae la latitud/longitud de la estación.
-LAT_DEFECTO = 6.2766
-LON_DEFECTO = -75.5901
+LAT_DEFECTO = 6.4988
+LON_DEFECTO = -74.8315
 
 API_BASE_URL = "https://marco.cornare.gov.co/api/v1/estaciones"
 LLAVE_FECHA = "level_date"
