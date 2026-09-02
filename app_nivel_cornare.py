@@ -222,7 +222,15 @@ def calcular_frescura(fecha_ultima_lectura):
     la misma zona horaria; si notas resultados raros, puede ser un
     tema de husos horarios.
     """
-    ahora = pd.Timestamp.now()
+    # La fecha que llega de la API puede tener zona horaria (ej. "-05:00")
+    # o no tenerla, según cómo la haya parseado pandas. Si tiene zona
+    # horaria, generamos "ahora" con esa MISMA zona horaria; si no,
+    # generamos "ahora" sin zona horaria. Así siempre son comparables.
+    if fecha_ultima_lectura.tzinfo is not None:
+        ahora = pd.Timestamp.now(tz=fecha_ultima_lectura.tzinfo)
+    else:
+        ahora = pd.Timestamp.now()
+
     diferencia = ahora - fecha_ultima_lectura
     minutos = diferencia.total_seconds() / 60
 
