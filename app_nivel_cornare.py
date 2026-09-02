@@ -125,6 +125,7 @@ def detectar_coordenadas(datos_json):
             pass
     return LAT_DEFECTO, LON_DEFECTO, False
 
+
 def calcular_indice_calidad(df):
     """Índice simple (0-100) combinando completitud de la serie y proporción de outliers."""
     if df.empty or len(df) < 2:
@@ -163,9 +164,8 @@ def clasificar_nivel_referencia(nivel_actual, serie):
         return "🟡 Normal-alto (referencial)", "#e9c46a"
     else:
         return "🟢 Normal (referencial)", "#2a9d8f"
-        
-# ultima edicion, calculo de tendencias
- 
+
+
 def calcular_tendencia(df, ventana=5):
     """
     Compara el promedio de las últimas 'ventana' lecturas contra el
@@ -177,22 +177,23 @@ def calcular_tendencia(df, ventana=5):
     """
     if len(df) < ventana * 2:
         return "➖ Datos insuficientes para calcular tendencia", None
- 
+
     ultimas = df["nivel"].iloc[-ventana:].mean()
     anteriores = df["nivel"].iloc[-ventana * 2:-ventana].mean()
     diferencia = ultimas - anteriores
- 
+
     # Umbral pequeño para no marcar "subiendo/bajando" por ruido mínimo
     # del sensor. Se basa en la variabilidad típica de la propia serie.
     umbral = df["nivel"].std() * 0.15 if df["nivel"].std() > 0 else 0.01
- 
+
     if diferencia > umbral:
         return "📈 Subiendo", diferencia
     elif diferencia < -umbral:
         return "📉 Bajando", diferencia
     else:
         return "➡️ Estable", diferencia
-        
+
+
 def calcular_velocidad_cambio(df):
     """
     Toma las dos últimas lecturas y calcula cuánto cambió el nivel
@@ -210,7 +211,7 @@ def calcular_velocidad_cambio(df):
         return None
     return delta_nivel / delta_horas
 
- 
+
 def calcular_frescura(fecha_ultima_lectura):
     """
     Calcula hace cuánto tiempo llegó el último dato, comparándolo con
@@ -224,7 +225,7 @@ def calcular_frescura(fecha_ultima_lectura):
     ahora = pd.Timestamp.now()
     diferencia = ahora - fecha_ultima_lectura
     minutos = diferencia.total_seconds() / 60
- 
+
     if minutos < 0:
         return "Dato con fecha futura (revisar reloj/zona horaria)", "⚠️", "#f4a261"
     elif minutos < 30:
@@ -238,6 +239,7 @@ def calcular_frescura(fecha_ultima_lectura):
     else:
         dias = minutos / 1440
         return f"hace {dias:.1f} días", "🔴", "#e63946"
+
 
 def diagrama_niveles_alerta():
     """
@@ -355,6 +357,42 @@ if consultar:
             st.caption(
                 "⚠️ Esta clasificación es solo una referencia calculada con los percentiles de "
                 "esta misma consulta. No reemplaza los umbrales oficiales de alerta de Cornare."
+            )
+
+            # --- Tendencia, velocidad de cambio y frescura del dato ---
+            tendencia_texto, diferencia_tendencia = calcular_tendencia(df)
+            velocidad = calcular_velocidad_cambio(df)
+            frescura_texto, frescura_icono, frescura_color = calcular_frescura(fecha_actual)
+
+            st.subheader("Tendencia y estado del último dato")
+            col_a, col_b, col_c = st.columns(3)
+
+            with col_a:
+                st.metric(
+                    "Tendencia (últimas 5 vs 5 anteriores)",
+                    tendencia_texto,
+                    delta=f"{diferencia_tendencia:.2f}" if diferencia_tendencia is not None else None,
+                )
+
+            with col_b:
+                if velocidad is not None:
+                    st.metric("Velocidad de cambio", f"{velocidad:+.2f} / hora")
+                else:
+                    st.metric("Velocidad de cambio", "N/D")
+
+            with col_c:
+                st.markdown(
+                    f"**Última lectura reportada:**<br>"
+                    f"<span style='color:{frescura_color}; font-weight:bold; font-size:18px;'>"
+                    f"{frescura_icono} {frescura_texto}</span>",
+                    unsafe_allow_html=True,
+                )
+
+            st.caption(
+                "La tendencia compara el promedio de las últimas 5 lecturas contra las 5 anteriores. "
+                "La velocidad de cambio es la diferencia entre las dos últimas lecturas, expresada por hora. "
+                "La frescura te dice hace cuánto llegó el dato más reciente — si es de hace mucho, "
+                "el sensor puede estar fallando o desconectado."
             )
 
             st.subheader("Guía de referencia — niveles de alerta")
