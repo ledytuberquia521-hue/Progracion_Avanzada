@@ -1,34 +1,37 @@
 """
 App Streamlit — Nivel de río/quebrada, Estación 38 (CORNARE / MARCO)
 ----------------------------------------------------------------------
-Versión personalizada: trabaja SIEMPRE con la estación 38, no permite
-cambiarla desde la app. Muestra información extra de la estación y un
-diagrama simple de niveles de alerta como referencia visual.
+Versión personalizada: trabaja SIEMPRE con la estación 38 (Río Nus).
+Muestra información extra de la estación y un diagrama simple de
+niveles de alerta como referencia visual.
 
 Para correrla:
     streamlit run app_nivel_cornare_estacion38.py
+
+IMPORTANTE: el archivo "rio_nus.png" debe estar en la MISMA carpeta
+que este script, si no, la imagen no va a cargar.
 """
 import requests
 import pandas as pd
 import numpy as np
 import streamlit as st
 import urllib3
-import streamlit as st
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ------------------------------------------------------------------
 # CONFIGURACIÓN FIJA DE LA ZONA/ESTACIÓN
 # ------------------------------------------------------------------
-# Antes esto era un st.sidebar.text_input() que el usuario podía editar.
-# Como ahora SIEMPRE trabajamos con la zona 38, lo convertimos en una
-# constante. Así nadie (ni yo por error) puede cambiarla desde la app.
 CODIGO_ESTACION = "38"
 
-# Coordenadas Rio Nus
-# Se usan solo si la API no trae la latitud/longitud de la estación.
+# Coordenadas Río Nus (estación 38)
 LAT_DEFECTO = 6.4988
 LON_DEFECTO = -74.8315
+
+# Foto fija de referencia de la estación 38. Debe existir en la misma
+# carpeta que este script. Si no la tienes, deja RUTA_FOTO = None y
+# la app mostrará un aviso en vez de romperse.
+RUTA_FOTO = "rio_nus.png"
 
 API_BASE_URL = "https://marco.cornare.gov.co/api/v1/estaciones"
 LLAVE_FECHA = "level_date"
@@ -36,9 +39,6 @@ LLAVE_VALOR = "level"
 CANDIDATOS_LAT = ["lat", "latitude", "latitud"]
 CANDIDATOS_LON = ["lng", "lon", "longitude", "longitud"]
 
-# Nombres posibles que la API podría usar para describir la estación.
-# Como no sabemos con certeza cuáles usa MARCO, probamos varios —
-# si ninguno existe, simplemente no mostramos ese dato (no inventamos nada).
 CANDIDATOS_NOMBRE = ["name", "nombre", "station_name"]
 CANDIDATOS_CORRIENTE = ["corriente", "stream", "river", "fuente_hidrica"]
 CANDIDATOS_MUNICIPIO = ["municipio", "municipality", "city"]
@@ -152,8 +152,6 @@ def clasificar_nivel_referencia(nivel_actual, serie):
     """
     Clasificación SIMPLE de referencia (no es la alerta oficial de Cornare,
     que usa umbrales calibrados por hidrólogos para cada estación).
-    Compara el nivel actual contra los percentiles de la propia serie
-    consultada, solo para dar una idea rápida de qué tan alto está.
     """
     p50 = serie.quantile(0.50)
     p80 = serie.quantile(0.80)
@@ -172,8 +170,6 @@ def diagrama_niveles_alerta():
     """
     Diagrama de referencia hecho con HTML/CSS simple (no depende de
     ninguna imagen externa, así que nunca se rompe ni se cae).
-    Sirve solo como guía visual de qué significa cada color, NO como
-    los umbrales oficiales de Cornare para la estación 38.
     """
     html = """
     <div style="display:flex; gap:6px; text-align:center; font-size:13px;">
@@ -191,47 +187,57 @@ def diagrama_niveles_alerta():
 # ------------------------------------------------------------------
 st.sidebar.header("Parámetros de tu consulta")
 nombre_estudiante = st.sidebar.text_input("Nombre del estudiante", "Tu Nombre Aquí")
-
-# Ya no hay input de código de estación: la mostramos fija, solo como info.
-st.sidebar.markdown(f"**Estación fija:** `Zona {CODIGO_ESTACION}`")
+st.sidebar.markdown(f"**Estación fija:** `Zona {CODIGO_ESTACION}` · Río Nus")
 
 fecha_desde = st.sidebar.date_input("Desde", pd.to_datetime("2026-08-23")).strftime("%Y-%m-%d")
 fecha_hasta = st.sidebar.date_input("Hasta", pd.to_datetime("2026-08-30")).strftime("%Y-%m-%d")
 calidad = st.sidebar.selectbox("Calidad", [1, 0], index=0, help="1 = solo datos validados")
 
-st.sidebar.markdown("---")
-st.sidebar.subheader("📷 Foto de referencia (opcional)")
-st.sidebar.caption("Si tienes una foto real de la estación 38, súbela aquí para tenerla como referencia visual.")
-st.image("rio_nus.png", caption="Estacion")
 consultar = st.sidebar.button("🔍 Consultar", type="primary")
 
-st.title("🌊 Nivel de río/quebrada — Estación 38 (CORNARE)")
-st.caption(f"Estudiante: **{nombre_estudiante}** · Zona/estación: **{CODIGO_ESTACION}** (fija)")
+# ------------------------------------------------------------------
+# Encabezado: imagen a la izquierda, título/subtítulo/info a la derecha
+# ------------------------------------------------------------------
+col_imagen, col_texto = st.columns([1, 2])
 
-# --- Metadata de la estación (nombre, corriente, municipio) ---
-metadata = obtener_metadata_estacion(CODIGO_ESTACION)
-nombre_est = extraer_campo(metadata, CANDIDATOS_NOMBRE)
-corriente = extraer_campo(metadata, CANDIDATOS_CORRIENTE)
-municipio = extraer_campo(metadata, CANDIDATOS_MUNICIPIO)
+with col_imagen:
+    # Nota los try/except: si el archivo no existe, no se cae la app,
+    # solo muestra un aviso.
+    try:
+        if RUTA_FOTO:
+            st.image(RUTA_FOTO, caption="Estación 38 — Río Nus", use_container_width=True)
+        else:
+            st.info("📷 No hay foto configurada (RUTA_FOTO = None).")
+    except Exception:
+        st.warning(f"No pude cargar la imagen '{RUTA_FOTO}'. Verifica que el archivo esté en esta carpeta.")
 
-if nombre_est or corriente or municipio:
-    partes = []
-    if nombre_est:
-        partes.append(f"**Nombre:** {nombre_est}")
-    if corriente:
-        partes.append(f"**Corriente:** {corriente}")
-    if municipio:
-        partes.append(f"**Municipio:** {municipio}")
-    st.info(" · ".join(partes))
-else:
-    st.caption(
-        "La API no trajo nombre/corriente/municipio para esta estación en el endpoint base. "
-        "Si conoces el nombre real de esos campos, ajusta `CANDIDATOS_NOMBRE`, "
-        "`CANDIDATOS_CORRIENTE` y `CANDIDATOS_MUNICIPIO` al inicio del archivo."
-    )
+with col_texto:
+    st.title("🌊 Nivel de río/quebrada — Estación 38 (CORNARE)")
+    st.caption(f"Estudiante: **{nombre_estudiante}** · Zona/estación: **{CODIGO_ESTACION}** (fija) · Río Nus")
 
+    # --- Metadata de la estación (nombre, corriente, municipio) ---
+    metadata = obtener_metadata_estacion(CODIGO_ESTACION)
+    nombre_est = extraer_campo(metadata, CANDIDATOS_NOMBRE)
+    corriente = extraer_campo(metadata, CANDIDATOS_CORRIENTE)
+    municipio = extraer_campo(metadata, CANDIDATOS_MUNICIPIO)
 
-    st.image(rio_nus.png, caption="Foto de referencia — Estación 38", width=350)
+    if nombre_est or corriente or municipio:
+        partes = []
+        if nombre_est:
+            partes.append(f"**Nombre:** {nombre_est}")
+        if corriente:
+            partes.append(f"**Corriente:** {corriente}")
+        if municipio:
+            partes.append(f"**Municipio (código):** {municipio}")
+        st.info(" · ".join(partes))
+    else:
+        st.caption(
+            "La API no trajo nombre/corriente/municipio para esta estación en el endpoint base. "
+            "Si conoces el nombre real de esos campos, ajusta `CANDIDATOS_NOMBRE`, "
+            "`CANDIDATOS_CORRIENTE` y `CANDIDATOS_MUNICIPIO` al inicio del archivo."
+        )
+
+    st.markdown("Ajusta las fechas en el sidebar y presiona **Consultar**. La estación ya está fija en 38.")
 
 # ------------------------------------------------------------------
 # Consulta y procesamiento
@@ -260,7 +266,6 @@ if consultar:
             fecha_actual = df["fecha"].iloc[-1]
             etiqueta_alerta, color_alerta = clasificar_nivel_referencia(nivel_actual, df["nivel"])
 
-            # --- Métricas principales (ahora con más info relevante) ---
             col1, col2, col3, col4, col5, col6 = st.columns(6)
             col1.metric("Lecturas", len(df))
             col2.metric("Nivel promedio", f"{df['nivel'].mean():.2f}")
@@ -279,31 +284,26 @@ if consultar:
                 "esta misma consulta. No reemplaza los umbrales oficiales de alerta de Cornare."
             )
 
-            # --- Diagrama de referencia de niveles ---
             st.subheader("Guía de referencia — niveles de alerta")
             diagrama_niveles_alerta()
 
-            # --- Gráfico de la serie ---
             st.subheader("Serie de nivel")
             st.line_chart(df.set_index("fecha")["nivel"])
 
-            # --- Mapa de la estación ---
             st.subheader("Ubicación de la estación")
             if not coords_reales:
                 st.caption(
-                    "La API no trajo latitud/longitud de la estación — se muestra el punto de partida "
-                    "(Pascual Bravo). Ajusta `CANDIDATOS_LAT` / `CANDIDATOS_LON` si conoces el nombre "
-                    "real de esas llaves."
+                    "La API no trajo latitud/longitud de la estación — se muestra la ubicación de "
+                    "referencia del Río Nus. Ajusta `CANDIDATOS_LAT` / `CANDIDATOS_LON` si conoces el "
+                    "nombre real de esas llaves."
                 )
             st.map(pd.DataFrame({"lat": [lat], "lon": [lon]}), zoom=10)
 
-            # --- Detalle de calidad ---
             with st.expander("Detalle del índice de calidad"):
                 st.write(f"- Huecos de reporte detectados: **{huecos}**")
                 st.write(f"- Outliers (IQR + nivel negativo): **{n_outliers}** de {len(df)} lecturas")
                 st.write("El índice combina completitud de la serie (70%) y proporción de datos sin outliers (30%).")
 
-            # --- Tabla y descarga ---
             with st.expander("Ver datos crudos"):
                 st.dataframe(df, use_container_width=True)
 
@@ -314,5 +314,3 @@ if consultar:
                 file_name=f"nivel_estacion_{CODIGO_ESTACION}.csv",
                 mime="text/csv",
             )
-else:
-    st.info("Ajusta las fechas en el sidebar y presiona **Consultar**. La estación ya está fija en 38.")
