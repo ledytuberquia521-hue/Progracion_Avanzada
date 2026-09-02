@@ -125,7 +125,6 @@ def detectar_coordenadas(datos_json):
             pass
     return LAT_DEFECTO, LON_DEFECTO, False
 
-
 def calcular_indice_calidad(df):
     """Índice simple (0-100) combinando completitud de la serie y proporción de outliers."""
     if df.empty or len(df) < 2:
@@ -165,7 +164,7 @@ def clasificar_nivel_referencia(nivel_actual, serie):
     else:
         return "🟢 Normal (referencial)", "#2a9d8f"
         
-#ultima edicion, calculo de tendencias
+# ultima edicion, calculo de tendencias
  
 def calcular_tendencia(df, ventana=5):
     """
