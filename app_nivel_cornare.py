@@ -164,7 +164,81 @@ def clasificar_nivel_referencia(nivel_actual, serie):
         return "🟡 Normal-alto (referencial)", "#e9c46a"
     else:
         return "🟢 Normal (referencial)", "#2a9d8f"
+        
+#ultima edicion, calculo de tendencias
+ 
+def calcular_tendencia(df, ventana=5):
+    """
+    Compara el promedio de las últimas 'ventana' lecturas contra el
+    promedio de las 'ventana' lecturas justo anteriores a esas.
+    Es como comparar "cómo iba en los últimos minutos" contra "cómo
+    iba un rato antes" para saber si el río está subiendo, bajando o
+    quieto. Si no hay suficientes datos para comparar, avisa en vez
+    de inventar una tendencia.
+    """
+    if len(df) < ventana * 2:
+        return "➖ Datos insuficientes para calcular tendencia", None
+ 
+    ultimas = df["nivel"].iloc[-ventana:].mean()
+    anteriores = df["nivel"].iloc[-ventana * 2:-ventana].mean()
+    diferencia = ultimas - anteriores
+ 
+    # Umbral pequeño para no marcar "subiendo/bajando" por ruido mínimo
+    # del sensor. Se basa en la variabilidad típica de la propia serie.
+    umbral = df["nivel"].std() * 0.15 if df["nivel"].std() > 0 else 0.01
+ 
+    if diferencia > umbral:
+        return "📈 Subiendo", diferencia
+    elif diferencia < -umbral:
+        return "📉 Bajando", diferencia
+    else:
+        return "➡️ Estable", diferencia
+        
+ def calcular_velocidad_cambio(df):
+    """
+    Toma las dos últimas lecturas y calcula cuánto cambió el nivel
+    por hora entre ellas. Es como el velocímetro de un carro, pero
+    para el río: no importa qué tan alto está, importa qué tan rápido
+    se está moviendo.
+    """
+    if len(df) < 2:
+        return None
+    ultimo = df.iloc[-1]
+    penultimo = df.iloc[-2]
+    delta_nivel = ultimo["nivel"] - penultimo["nivel"]
+    delta_horas = (ultimo["fecha"] - penultimo["fecha"]).total_seconds() / 3600
+    if delta_horas <= 0:
+        return None
+    return delta_nivel / delta_horas
 
+ 
+def calcular_frescura(fecha_ultima_lectura):
+    """
+    Calcula hace cuánto tiempo llegó el último dato, comparándolo con
+    la hora actual. Si el último dato es muy viejo, probablemente el
+    sensor dejó de reportar (por ejemplo, después del robo de una
+    estación, como pasó con la de Viboral en 2023).
+    Nota: asume que la hora del computador y la de la API están en
+    la misma zona horaria; si notas resultados raros, puede ser un
+    tema de husos horarios.
+    """
+    ahora = pd.Timestamp.now()
+    diferencia = ahora - fecha_ultima_lectura
+    minutos = diferencia.total_seconds() / 60
+ 
+    if minutos < 0:
+        return "Dato con fecha futura (revisar reloj/zona horaria)", "⚠️", "#f4a261"
+    elif minutos < 30:
+        return f"hace {int(minutos)} min", "🟢", "#2a9d8f"
+    elif minutos < 180:
+        horas = minutos / 60
+        return f"hace {horas:.1f} h", "🟡", "#e9c46a"
+    elif minutos < 1440:
+        horas = minutos / 60
+        return f"hace {horas:.1f} h", "🟠", "#f4a261"
+    else:
+        dias = minutos / 1440
+        return f"hace {dias:.1f} días", "🔴", "#e63946"
 
 def diagrama_niveles_alerta():
     """
