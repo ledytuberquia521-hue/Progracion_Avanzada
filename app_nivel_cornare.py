@@ -193,7 +193,7 @@ def calcular_tendencia(df, ventana=5):
     else:
         return "➡️ Estable", diferencia
         
- def calcular_velocidad_cambio(df):
+def calcular_velocidad_cambio(df):
     """
     Toma las dos últimas lecturas y calcula cuánto cambió el nivel
     por hora entre ellas. Es como el velocímetro de un carro, pero
