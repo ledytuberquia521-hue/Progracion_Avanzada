@@ -218,9 +218,7 @@ def calcular_frescura(fecha_ultima_lectura):
     la hora actual. Si el último dato es muy viejo, probablemente el
     sensor dejó de reportar (por ejemplo, después del robo de una
     estación, como pasó con la de Viboral en 2023).
-    Nota: asume que la hora del computador y la de la API están en
-    la misma zona horaria; si notas resultados raros, puede ser un
-    tema de husos horarios.
+    
     """
     # La fecha que llega de la API puede tener zona horaria (ej. "-05:00")
     # o no tenerla, según cómo la haya parseado pandas. Si tiene zona
@@ -362,10 +360,7 @@ if consultar:
                 f"<span style='color:{color_alerta}; font-weight:bold;'>{etiqueta_alerta}</span>",
                 unsafe_allow_html=True,
             )
-            st.caption(
-                "⚠️ Esta clasificación es solo una referencia calculada con los percentiles de "
-                "esta misma consulta. No reemplaza los umbrales oficiales de alerta de Cornare."
-            )
+            
 
             # --- Tendencia, velocidad de cambio y frescura del dato ---
             tendencia_texto, diferencia_tendencia = calcular_tendencia(df)
