@@ -5,9 +5,12 @@ st.title("PROGRAMACIÓN AVANZADA 2026.")
 with st.sidebar:
   st.subheader("Calculo aplicado, gradiente..")
   parrafo = (
-    "La inteligencia artificial permite mejorar la toma de decisiones con el uso de datos, "
-    "automatizar tareas rutinarias y proporcionar análisis avanzados en tiempo real, lo que "
-    "resulta en una mayor eficiencia y precisión en diversos campos."
+    "¡Hola! Bienvenido a mi portafolio digital."
+"Soy estudiante de Ingeniería de Desarrollo de Software y este espacio está diseñado"
+" para documentar mi proceso de aprendizaje. Aquí encontrarás las evidencias,"
+" proyectos y prácticas que he desarrollado en clase, aplicando conceptos de desarrollo,"
+" algoritmos y resolución de problemas reales. Mi objetivo es transformar la teoría en"
+" soluciones de software funcionales y escalables."
   )
   st.write(parrafo)
 
@@ -18,12 +21,14 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
  
- st.subheader("Conversión de texto a voz")
+ st.subheader("Calculo aplicado, gradiente.")
  image = Image.open('txt_to_audio2.png')
  st.image(image, width=190)
- st.write("En la siguiente enlace usaremos una de las aplicaciones de Inteligencia Artificial") 
- url = "https://imultimod.streamlit.app/"
- st.write(f"Texto a voz: [Enlace]({url})")
+ st.write("Analizamos el paso de la derivada al descenso de gradiente"
+" para comprender cómo los algoritmos buscan mínimos."
+" Una mirada analítica a la regresión lineal y al ajuste iterativo para reducir el error.") 
+ url = "https://programaci-navanzada-n9yfwwcsyp9odtksrrdis8.streamlit.app/"
+ st.write(f"Calculo aplicado, gradiente: [Enlace]({url})")
 
  st.subheader("Reconocimiento de Objetos")
  image = Image.open('txt_to_audio.png')
