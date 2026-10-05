@@ -43,7 +43,7 @@ PROYECTOS = [
     {
         "titulo": "Preparación de datos",
         "categoria": "Datos",
-        "imagen": "3.png",
+        "imagen": "3.jpg",
         "descripcion": (
             "La preparación de datos como fundamento de la computación avanzada."
         ),
