@@ -124,8 +124,7 @@ PROYECTOS = [
         ),
         "url": "https://progracionavanzada-4nzepzddx3ylcabklzxs5b.streamlit.app/",
     },
-    # OJO: este proyecto tenía el mismo enlace que "De la regresión lineal a la
-    # logística". Pon aquí su URL real; mientras sea None se muestra "Próximamente".
+  
     {
         "titulo": "KNN: vecinos más cercanos",
         "categoria": "Clasificación",
@@ -134,7 +133,7 @@ PROYECTOS = [
             "KNN clasifica datos según la similitud con ejemplos conocidos, "
             "usando los vecinos más cercanos para realizar predicciones."
         ),
-        "url": None,
+        "url": "https://progracionavanzada-4nzepzddx3ylcabklzxs5b.streamlit.app/",
     },
 ]
 
