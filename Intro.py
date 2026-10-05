@@ -33,7 +33,7 @@ PROYECTOS = [
     {
         "titulo": "Lógica, Big-O y vectorización",
         "categoria": "Fundamentos",
-        "imagen": "txt_to_audio.png",
+        "imagen": "2.png",
         "descripcion": (
             "Aprenderemos cómo la lógica, la complejidad Big-O y la vectorización "
             "impactan el rendimiento del hardware en sistemas de IA masivos."
