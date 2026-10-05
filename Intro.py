@@ -22,7 +22,7 @@ PROYECTOS = [
     {
         "titulo": "Cálculo aplicado: gradiente",
         "categoria": "Fundamentos",
-        "imagen": "txt_to_audio2.png",
+        "imagen": "1.png",
         "descripcion": (
             "Analizamos el paso de la derivada al descenso de gradiente para "
             "comprender cómo los algoritmos buscan mínimos. Una mirada analítica "
