@@ -135,6 +135,17 @@ PROYECTOS = [
         ),
         "url": "https://progracionavanzada-4nzepzddx3ylcabklzxs5b.streamlit.app/",
     },
+
+      {
+        "titulo": "Sesion15",
+        "categoria": "Modelos predictivos",
+        "imagen": "OIG6.jpg",
+        "descripcion": (
+            "En esta sesion usaremos conceptos básicos de POO para transformar código suelto de en código modular, "
+            "reutilizable y empaquetable."
+        ),
+        "url": "https://progracionavanzada-sesion15.streamlit.app/",
+    },
 ]
 
 COLUMNAS = 3  # tarjetas por fila
