@@ -1,13 +1,14 @@
 """
-Módulo 12 — API del modelo de regresión lineal (California Housing)
+Módulo 12 — API del modelo de regresión logística (¿lloverá mañana?)
 
 Rutas:
     GET  /          → página con el formulario
-    GET  /modelo    → información del modelo
-    POST /predict   → predicción para una vivienda
+    GET  /modelo    → información y métricas del modelo
+    POST /predict   → probabilidad de lluvia y decisión
     GET  /docs      → documentación automática (la genera FastAPI)
 """
 import json
+import math
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -18,30 +19,32 @@ CARPETA = Path(__file__).parent
 MODELO = json.loads((CARPETA / "modelo.json").read_text(encoding="utf-8"))
 
 app = FastAPI(
-    title="Estimador de valor de vivienda",
-    description="Regresión lineal del Módulo 6, desplegada en el Módulo 12.",
+    title="¿Lloverá mañana?",
+    description="Regresión logística del Módulo 8, desplegada en el Módulo 12.",
     version="1.0",
 )
 
 
-class Vivienda(BaseModel):
-    MedInc: float = Field(..., description="Ingreso medio del sector (decenas de miles de USD)", examples=[3.5])
-    HouseAge: float = Field(..., description="Edad media de las viviendas (años)", examples=[29])
-    AveRooms: float = Field(..., description="Habitaciones promedio por vivienda", examples=[5.2])
-    AveBedrms: float = Field(..., description="Dormitorios promedio por vivienda", examples=[1.05])
-    Population: float = Field(..., description="Población del sector", examples=[1170])
-    AveOccup: float = Field(..., description="Personas promedio por hogar", examples=[2.8])
-    Latitude: float = Field(..., description="Latitud", examples=[34.05])
-    Longitude: float = Field(..., description="Longitud", examples=[-118.24])
+class Dia(BaseModel):
+    temperatura: float = Field(..., ge=-10, le=50, description="Temperatura promedio (°C)", examples=[24])
+    humedad: float = Field(..., ge=0, le=100, description="Humedad relativa (%)", examples=[85])
+    viento: float = Field(..., ge=0, le=150, description="Velocidad del viento (km/h)", examples=[12])
 
 
-def predecir(datos: dict) -> float:
-    # ŷ = b + Σ w_i · (x_i − μ_i) / σ_i   (la misma ecuación del notebook)
-    y = MODELO["sesgo"]
-    for nombre, mu, sigma, w in zip(MODELO["variables"], MODELO["media"],
-                                    MODELO["desviacion"], MODELO["pesos"]):
-        y += w * (datos[nombre] - mu) / sigma
-    return y
+def sigmoide(z: float) -> float:
+    if z >= 0:
+        return 1 / (1 + math.exp(-z))
+    e = math.exp(z)
+    return e / (1 + e)
+
+
+def clasificar(datos: dict):
+    # z = b + Σ w_i · x_i   →   p = σ(z)   →   clase = p ≥ umbral
+    z = MODELO["sesgo"]
+    for nombre, w in zip(MODELO["variables"], MODELO["pesos"]):
+        z += w * datos[nombre]
+    p = sigmoide(z)
+    return p, int(p >= MODELO["umbral"])
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
@@ -54,17 +57,17 @@ def info_modelo():
     return {
         "nombre": MODELO["nombre"],
         "variables": MODELO["variables"],
-        "r2_prueba": MODELO["r2_prueba"],
-        "unidad_salida": MODELO["unidad_salida"],
+        "umbral": MODELO["umbral"],
+        "metricas_prueba": MODELO["metricas_prueba"],
     }
 
 
 @app.post("/predict")
-def predict(vivienda: Vivienda):
-    y = predecir(vivienda.model_dump())
-    y = max(y, 0.0)  # una recta puede dar negativos; un precio no
+def predict(dia: Dia):
+    p, clase = clasificar(dia.model_dump())
     return {
-        "prediccion": round(y, 4),
-        "valor_usd": round(y * 100_000),
-        "nota": "Valor estimado con datos del censo de 1990",
+        "probabilidad": round(p, 4),
+        "clase": clase,
+        "decision": MODELO["clases"][str(clase)],
+        "umbral": MODELO["umbral"],
     }

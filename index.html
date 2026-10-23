@@ -3,75 +3,63 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Estimador de vivienda</title>
+  <title>¿Lloverá mañana?</title>
   <style>
-    :root { --fondo:#f4f6f8; --tarjeta:#fff; --texto:#1d2733; --suave:#5b6775; --acento:#0f6e8c; --borde:#d8dee5; }
+    :root { --fondo:#f2f5f9; --tarjeta:#fff; --texto:#1b2633; --suave:#5d6a79; --acento:#2f5fa7; --borde:#d7dee7;
+            --lluvia:#2f5fa7; --seco:#c98a12; }
     * { box-sizing: border-box; }
     body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background:var(--fondo); color:var(--texto); }
-    main { max-width: 760px; margin: 0 auto; padding: 32px 16px; }
+    main { max-width: 640px; margin: 0 auto; padding: 32px 16px; }
     h1 { margin: 0 0 4px; font-size: 1.6rem; }
     .sub { color: var(--suave); margin: 0 0 24px; }
     .tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 12px; padding: 24px; }
-    .campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-    label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 6px; }
-    small { display: block; color: var(--suave); font-weight: 400; }
-    input, select { width: 100%; padding: 10px; font-size: 1rem; border: 1px solid var(--borde); border-radius: 8px; }
-    button { margin-top: 20px; width: 100%; padding: 12px; font-size: 1rem; font-weight: 600;
-             color: #fff; background: var(--acento); border: 0; border-radius: 8px; cursor: pointer; }
+    .campo { margin-bottom: 22px; }
+    .fila { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    label { font-weight: 600; }
+    .valor { font-variant-numeric: tabular-nums; color: var(--acento); font-weight: 700; }
+    input[type=range] { width: 100%; accent-color: var(--acento); }
+    button { width: 100%; padding: 12px; font-size: 1rem; font-weight: 600; color: #fff;
+             background: var(--acento); border: 0; border-radius: 8px; cursor: pointer; }
     button:disabled { opacity: .6; }
-    #resultado { margin-top: 20px; padding: 20px; border-radius: 10px; background: #e8f3f6; display: none; }
-    #resultado .valor { font-size: 2rem; font-weight: 700; color: var(--acento); }
+    #resultado { margin-top: 22px; display: none; }
+    #decision { font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; }
+    .barra { position: relative; height: 18px; border-radius: 9px; background: #e4e9f0; overflow: visible; }
+    .relleno { height: 100%; border-radius: 9px; width: 0; transition: width .4s; }
+    .marca { position: absolute; top: -6px; width: 2px; height: 30px; background: var(--texto); }
+    .marca span { position: absolute; top: 32px; left: 50%; transform: translateX(-50%);
+                  font-size: .75rem; color: var(--suave); white-space: nowrap; }
+    #detalle { margin-top: 30px; color: var(--suave); font-size: .9rem; }
     footer { margin-top: 20px; font-size: .85rem; color: var(--suave); }
     a { color: var(--acento); }
   </style>
 </head>
 <body>
 <main>
-  <h1>🏠 Estimador de valor de vivienda</h1>
-  <p class="sub">Regresión lineal entrenada con descenso de gradiente · California, censo de 1990</p>
+  <h1>🌦️ ¿Lloverá mañana?</h1>
+  <p class="sub">Regresión logística · probabilidad de lluvia según el clima del día</p>
 
   <form id="formulario" class="tarjeta">
-    <div class="campos">
-      <div>
-        <label for="ciudad">Ciudad</label>
-        <select id="ciudad">
-          <option value="34.05,-118.24">Los Ángeles</option>
-          <option value="37.77,-122.42">San Francisco</option>
-          <option value="32.72,-117.16">San Diego</option>
-          <option value="38.58,-121.49">Sacramento</option>
-          <option value="36.74,-119.79">Fresno</option>
-        </select>
-      </div>
-      <div>
-        <label for="MedInc">Ingreso medio del sector <small>decenas de miles de USD (3.5 = 35.000)</small></label>
-        <input id="MedInc" type="number" step="0.1" min="0" value="3.5" required>
-      </div>
-      <div>
-        <label for="HouseAge">Edad de las viviendas <small>años</small></label>
-        <input id="HouseAge" type="number" step="1" min="0" value="29" required>
-      </div>
-      <div>
-        <label for="AveRooms">Habitaciones por vivienda <small>promedio</small></label>
-        <input id="AveRooms" type="number" step="0.1" min="0" value="5.2" required>
-      </div>
-      <div>
-        <label for="AveBedrms">Dormitorios por vivienda <small>promedio</small></label>
-        <input id="AveBedrms" type="number" step="0.05" min="0" value="1.05" required>
-      </div>
-      <div>
-        <label for="Population">Población del sector <small>personas</small></label>
-        <input id="Population" type="number" step="10" min="0" value="1170" required>
-      </div>
-      <div>
-        <label for="AveOccup">Personas por hogar <small>promedio</small></label>
-        <input id="AveOccup" type="number" step="0.1" min="0" value="2.8" required>
-      </div>
+    <div class="campo">
+      <div class="fila"><label for="temperatura">Temperatura</label><span class="valor" id="v-temperatura"></span></div>
+      <input id="temperatura" type="range" min="5" max="40" step="0.5" value="24" data-unidad=" °C">
     </div>
-    <button id="boton" type="submit">Estimar valor</button>
+    <div class="campo">
+      <div class="fila"><label for="humedad">Humedad</label><span class="valor" id="v-humedad"></span></div>
+      <input id="humedad" type="range" min="10" max="100" step="1" value="85" data-unidad=" %">
+    </div>
+    <div class="campo">
+      <div class="fila"><label for="viento">Viento</label><span class="valor" id="v-viento"></span></div>
+      <input id="viento" type="range" min="0" max="40" step="1" value="12" data-unidad=" km/h">
+    </div>
+
+    <button id="boton" type="submit">Calcular probabilidad</button>
 
     <div id="resultado">
-      <div>Valor estimado de la vivienda:</div>
-      <div class="valor" id="valor"></div>
+      <div id="decision"></div>
+      <div class="barra">
+        <div class="relleno" id="relleno"></div>
+        <div class="marca" id="marca"><span id="texto-umbral"></span></div>
+      </div>
       <div id="detalle"></div>
     </div>
   </form>
@@ -83,11 +71,21 @@
 </main>
 
 <script>
-  const campos = ["MedInc", "HouseAge", "AveRooms", "AveBedrms", "Population", "AveOccup"];
+  const campos = ["temperatura", "humedad", "viento"];
 
-  // Información del modelo (R²) desde la API
+  // Mostrar el valor de cada deslizador mientras se mueve
+  for (const c of campos) {
+    const control = document.getElementById(c);
+    const mostrar = () => document.getElementById("v-" + c).textContent = control.value + control.dataset.unidad;
+    control.addEventListener("input", mostrar);
+    mostrar();
+  }
+
+  // Métricas del modelo desde la API
   fetch("/modelo").then(r => r.json()).then(m => {
-    document.getElementById("info-modelo").textContent = `R² en prueba: ${m.r2_prueba}`;
+    const k = m.metricas_prueba;
+    document.getElementById("info-modelo").textContent =
+      `Accuracy ${(k.accuracy * 100).toFixed(0)} % · Precisión ${(k.precision * 100).toFixed(0)} % · Recall ${(k.recall * 100).toFixed(0)} %`;
   });
 
   document.getElementById("formulario").addEventListener("submit", async (evento) => {
@@ -95,9 +93,8 @@
     const boton = document.getElementById("boton");
     boton.disabled = true;
 
-    // 1. Reunir los datos del formulario
-    const [lat, lon] = document.getElementById("ciudad").value.split(",").map(Number);
-    const datos = { Latitude: lat, Longitude: lon };
+    // 1. Reunir los datos
+    const datos = {};
     for (const c of campos) datos[c] = Number(document.getElementById(c).value);
 
     // 2. Enviarlos a la API
@@ -111,10 +108,18 @@
       const r = await respuesta.json();
 
       // 3. Mostrar el resultado
-      document.getElementById("valor").textContent = "$ " + r.valor_usd.toLocaleString("es-CO") + " USD";
-      document.getElementById("detalle").textContent = `ŷ = ${r.prediccion} (cientos de miles de USD) · ${r.nota}`;
+      const pct = (r.probabilidad * 100).toFixed(1);
+      const color = r.clase === 1 ? "var(--lluvia)" : "var(--seco)";
+      document.getElementById("decision").textContent = (r.clase === 1 ? "☔ " : "☀️ ") + r.decision;
+      document.getElementById("decision").style.color = color;
+      document.getElementById("relleno").style.width = pct + "%";
+      document.getElementById("relleno").style.background = color;
+      document.getElementById("marca").style.left = (r.umbral * 100) + "%";
+      document.getElementById("texto-umbral").textContent = "umbral " + r.umbral;
+      document.getElementById("detalle").textContent =
+        `Probabilidad de lluvia: ${pct} % · ${r.clase === 1 ? "supera" : "no alcanza"} el umbral de ${r.umbral}`;
     } catch (e) {
-      document.getElementById("valor").textContent = "No se pudo calcular";
+      document.getElementById("decision").textContent = "No se pudo calcular";
       document.getElementById("detalle").textContent = e.message;
     }
     document.getElementById("resultado").style.display = "block";
