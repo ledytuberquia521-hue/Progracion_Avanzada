@@ -1,19 +1,18 @@
-# Eficiencia y paralelismo en Python
+# Estimador de valor de vivienda — Módulo 12
 
-App de apoyo al Colab introductorio (Módulo 11 · Computación Avanzada).
+Regresión lineal (Módulo 6) entrenada con descenso de gradiente y desplegada como API con FastAPI.
+
+## Enlaces
+- App: https://TU-PROYECTO.vercel.app
+- Documentación de la API: https://TU-PROYECTO.vercel.app/docs
 
 ## Archivos
-- `app.py`: la app (pestañas Inicio, Hilos, Procesos, NumPy, Ley de Amdahl y Preguntas).
-- `tareas.py`: funciones que ejecutan los workers. Deben estar en un archivo aparte para que los procesos funcionen.
-- `requirements.txt`: dependencias.
+| Archivo | Rol |
+|---|---|
+| `modelo.json` | Pesos, sesgo, medias y desviaciones del modelo entrenado |
+| `main.py` | API: carga el modelo y responde en `/predict` |
+| `index.html` | Página con el formulario |
+| `requirements.txt` | Dependencias del servidor |
 
-## Ejecutar localmente
-```
-pip install -r requirements.txt
-streamlit run app.py
-```
-
-## Desplegar en Streamlit Cloud
-1. Suba estos tres archivos a un repositorio de GitHub.
-2. En https://share.streamlit.io, elija **Create app**, el repositorio y `app.py` como archivo principal.
-3. Pulse **Deploy**.
+## Reflexión
+(Escribe aquí tus respuestas a las preguntas del final del notebook)

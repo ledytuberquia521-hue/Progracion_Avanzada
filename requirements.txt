@@ -1,4 +1,2 @@
-streamlit>=1.50
-numpy
-pandas
-altair
+fastapi
+uvicorn
